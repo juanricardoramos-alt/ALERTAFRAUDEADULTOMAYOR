@@ -1,5 +1,5 @@
 /**
- * Tests del cerebro de análisis de GuardIA.
+ * Tests del cerebro de análisis de Custovia.
  * Se corren con: npm test
  *
  * Cubren los casos clave del diseño:

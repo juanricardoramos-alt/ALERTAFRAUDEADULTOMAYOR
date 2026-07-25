@@ -1,4 +1,7 @@
-# 🛡️ GuardIA — Alerta de fraude telefónico para adultos mayores
+# 🛡️ Custovia — Alerta de fraude telefónico para adultos mayores
+
+> **Custovia** se lee "Custov-IA": evoca *custodia* —resguardo, protección—
+> con la IA adentro.
 
 Prototipo de una app que protege a adultos mayores de estafas telefónicas
 (el falso "nieto en apuros", falsos bancos, falsa PDI, premios inexistentes)

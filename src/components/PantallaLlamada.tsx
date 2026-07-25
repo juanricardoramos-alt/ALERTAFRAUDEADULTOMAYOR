@@ -1,5 +1,5 @@
 /**
- * GuardIA — Pantalla de llamada del abuelito.
+ * Custovia — Pantalla de llamada del abuelito.
  *
  * Es LA pantalla de la app del adulto mayor: semáforo a pantalla completa,
  * transcripción en vivo y un botón gigante de COLGAR. Sin menús.

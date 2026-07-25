@@ -1,5 +1,5 @@
 /**
- * Configuración de Jest para probar el "cerebro" de GuardIA (src/brain).
+ * Configuración de Jest para probar el "cerebro" de Custovia (src/brain).
  * Es lógica TypeScript pura (sin componentes de React Native), así que
  * basta con ts-jest en ambiente Node; no se necesita emulador ni teléfono.
  */

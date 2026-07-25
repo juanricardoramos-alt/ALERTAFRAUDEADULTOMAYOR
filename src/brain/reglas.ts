@@ -1,5 +1,5 @@
 /**
- * GuardIA — Reglas locales de detección de fraude telefónico (Fase 1).
+ * Custovia — Reglas locales de detección de fraude telefónico (Fase 1).
  *
  * Cada regla busca CONDUCTAS en la conversación (qué pide el que llama),
  * no juzga quién llama. Los patrones se evalúan sobre texto "normalizado":

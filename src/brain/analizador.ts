@@ -1,5 +1,5 @@
 /**
- * GuardIA — Analizador de conversaciones (Fase 1: reglas locales).
+ * Custovia — Analizador de conversaciones (Fase 1: reglas locales).
  *
  * Recibe texto (la transcripción de una llamada, venga de donde venga:
  * simulación, reconocimiento de voz o VoIP) y lo procesa por bloques,

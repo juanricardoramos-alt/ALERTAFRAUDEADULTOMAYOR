@@ -1,5 +1,5 @@
 /**
- * GuardIA — Prototipo Fase 1.
+ * Custovia — Prototipo Fase 1.
  *
  * Dos pantallas:
  *  - Inicio: configurar la simulación (quién llama + conversación).

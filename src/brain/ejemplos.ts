@@ -1,5 +1,5 @@
 /**
- * GuardIA — Conversaciones de ejemplo para el modo simulación.
+ * Custovia — Conversaciones de ejemplo para el modo simulación.
  * Sirven para demos con familiares, inversionistas y abuelitos de prueba.
  */
 

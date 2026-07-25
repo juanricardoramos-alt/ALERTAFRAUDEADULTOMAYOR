@@ -1,5 +1,5 @@
 /**
- * GuardIA — Pantalla de inicio del prototipo (modo simulación).
+ * Custovia — Pantalla de inicio del prototipo (modo simulación).
  *
  * Esta pantalla es para quien hace la DEMO (tú), no para el abuelito:
  * aquí eliges quién llama y pegas la conversación a simular. En fases
@@ -57,7 +57,7 @@ export default function PantallaInicio({ onIniciar }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={estilos.contenido}>
-        <Text style={estilos.logo}>🛡️ GuardIA</Text>
+        <Text style={estilos.logo}>🛡️ Custovia</Text>
         <Text style={estilos.eslogan}>
           Protección contra estafas telefónicas para adultos mayores
         </Text>
