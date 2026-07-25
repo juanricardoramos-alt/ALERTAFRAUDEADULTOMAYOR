@@ -256,6 +256,12 @@ las vías de acceso al audio.
   alianza con operador. (Ni iOS ni Android permiten escuchar llamadas
   nativas por privacidad.)
 
+**Ideas guardadas para después** (ver
+[`docs/IDEAS-PENDIENTES.md`](docs/IDEAS-PENDIENTES.md)): sugerir el
+altavoz automáticamente en llamadas de desconocidos, y reportes
+periódicos para la familia de las llamadas revisadas. Orden acordado:
+probar Fases 2 y 4 → rediseño accesible → estas ideas, de a una.
+
 ## Privacidad desde el diseño
 
 - El audio se descarta al instante; solo se procesa texto.
