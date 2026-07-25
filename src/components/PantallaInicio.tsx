@@ -21,6 +21,8 @@ import {
 
 import { EJEMPLOS } from '../brain/ejemplos';
 import { TipoLlamante } from '../brain/reglas';
+import { Abuelito } from '../servicios/supabase';
+import TarjetaFamilia from './TarjetaFamilia';
 
 const TIPOS: { tipo: TipoLlamante; icono: string; nombre: string; detalle: string }[] = [
   {
@@ -45,9 +47,17 @@ const TIPOS: { tipo: TipoLlamante; icono: string; nombre: string; detalle: strin
 
 interface Props {
   onIniciar: (tipo: TipoLlamante, texto: string) => void;
+  abuelito: Abuelito | null;
+  onNombreCambiado: (nombre: string) => void;
+  onCambiarModo: () => void;
 }
 
-export default function PantallaInicio({ onIniciar }: Props) {
+export default function PantallaInicio({
+  onIniciar,
+  abuelito,
+  onNombreCambiado,
+  onCambiarModo,
+}: Props) {
   const [tipo, setTipo] = useState<TipoLlamante>('desconocido');
   const [texto, setTexto] = useState('');
 
@@ -126,10 +136,16 @@ export default function PantallaInicio({ onIniciar }: Props) {
           <Text style={estilos.textoIniciar}>▶️ INICIAR LLAMADA SIMULADA</Text>
         </Pressable>
 
+        <TarjetaFamilia abuelito={abuelito} onNombreCambiado={onNombreCambiado} />
+
         <Text style={estilos.notaPrivacidad}>
           🔒 Principio de diseño: el audio se descarta al instante, solo se
           procesa texto, y solo se guardan los fragmentos con riesgo.
         </Text>
+
+        <Pressable onPress={onCambiarModo} style={estilos.enlaceModo} accessibilityRole="button">
+          <Text style={estilos.textoEnlaceModo}>Cambiar de modo (abuelito / familia)</Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -261,5 +277,15 @@ const estilos = StyleSheet.create({
     textAlign: 'center',
     marginTop: 18,
     lineHeight: 18,
+  },
+  enlaceModo: {
+    alignItems: 'center',
+    padding: 10,
+    marginTop: 6,
+  },
+  textoEnlaceModo: {
+    color: '#1666D6',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

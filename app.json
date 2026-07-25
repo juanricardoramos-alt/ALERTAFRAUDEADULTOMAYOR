@@ -20,6 +20,18 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/sonidos/clasica.wav",
+            "./assets/sonidos/sirena.wav",
+            "./assets/sonidos/campana.wav"
+          ]
+        }
+      ]
+    ]
   }
 }

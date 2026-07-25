@@ -35,6 +35,9 @@ import {
   VeredictoIA,
 } from '../brain/ia';
 import { NivelRiesgo, TipoLlamante } from '../brain/reglas';
+import { dispararAlerta } from '../servicios/alertas';
+import { resumenParaAlerta } from '../servicios/logica';
+import { Abuelito } from '../servicios/supabase';
 
 /** Cuánto se demora en "escuchar" cada bloque (simula 10-15 s de llamada). */
 const MS_ENTRE_BLOQUES = 2500;
@@ -83,10 +86,12 @@ const ETIQUETA_LLAMANTE: Record<TipoLlamante, string> = {
 interface Props {
   tipoLlamante: TipoLlamante;
   bloques: string[];
+  /** Registro del abuelito en Supabase (null = Fase 4 sin configurar). */
+  abuelito: Abuelito | null;
   onColgar: () => void;
 }
 
-export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Props) {
+export default function PantallaLlamada({ tipoLlamante, bloques, abuelito, onColgar }: Props) {
   const [estado, setEstado] = useState<EstadoAnalisis>(() => crearAnalisis(tipoLlamante));
   const [mostrados, setMostrados] = useState<string[]>([]);
   const nivelPrevio = useRef<NivelRiesgo>(estado.nivel);
@@ -106,6 +111,12 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
 
   // Lo que ve el abuelito: reglas locales + IA combinadas (el más alto manda).
   const estadoFinal = combinarConIA(estado, veredictoIA);
+
+  // Envío real de la alerta a la familia (Fase 4).
+  const alertaDisparada = useRef(false);
+  const [envioAlerta, setEnvioAlerta] = useState<
+    { fase: 'sin-conexion' | 'enviando' | 'error' } | { fase: 'ok'; familiares: number }
+  >({ fase: abuelito ? 'enviando' : 'sin-conexion' });
 
   const terminado = mostrados.length >= bloques.length;
 
@@ -144,6 +155,29 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
       }
     });
   }, [mostrados.length, iaAnalizando, tipoLlamante, estado.puntaje, veredictoIA]);
+
+  // Al llegar a ROJO: disparar la alerta REAL hacia la familia (una sola
+  // vez por llamada). Si Supabase no está configurado, queda simulada.
+  useEffect(() => {
+    if (estadoFinal.nivel !== 'rojo' || alertaDisparada.current) return;
+    alertaDisparada.current = true;
+    if (!abuelito) {
+      setEnvioAlerta({ fase: 'sin-conexion' });
+      return;
+    }
+    setEnvioAlerta({ fase: 'enviando' });
+    const resumen = resumenParaAlerta(estadoFinal, veredictoIA);
+    dispararAlerta({
+      abuelitoId: abuelito.id,
+      nombreAbuelito: abuelito.nombre,
+      motivo: resumen.motivo,
+      fragmento: resumen.fragmento,
+      nivel: 'rojo',
+    }).then((r) => {
+      if (!montado.current) return;
+      setEnvioAlerta(r.ok ? { fase: 'ok', familiares: r.familiaresAvisados } : { fase: 'error' });
+    });
+  }, [estadoFinal.nivel, estadoFinal, veredictoIA, abuelito]);
 
   // Reacciones físicas cuando cambia el nivel de riesgo (reglas + IA).
   useEffect(() => {
@@ -219,7 +253,15 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
       {estadoFinal.nivel === 'rojo' && (
         <View style={estilos.tarjetaOscura}>
           <Text style={estilos.textoTarjeta}>
-            🔔 Su familia ya fue avisada (simulado en esta versión)
+            {envioAlerta.fase === 'sin-conexion' &&
+              '🔔 Aviso a la familia (simulado: falta configurar Supabase)'}
+            {envioAlerta.fase === 'enviando' && '🔔 Avisando a su familia…'}
+            {envioAlerta.fase === 'ok' &&
+              (envioAlerta.familiares > 0
+                ? `🔔 Su familia ya fue avisada (${envioAlerta.familiares} familiar${envioAlerta.familiares === 1 ? '' : 'es'})`
+                : '🔔 Alerta registrada (aún no hay familiares vinculados)')}
+            {envioAlerta.fase === 'error' &&
+              '⚠️ No se pudo avisar a la familia (¿sin internet?). El semáforo sigue protegiendo.'}
           </Text>
         </View>
       )}

@@ -12,6 +12,7 @@
   },
   "include": [
     "src/brain/**/*.ts",
+    "src/servicios/**/*.ts",
     "src/types/**/*.d.ts"
   ]
 }
