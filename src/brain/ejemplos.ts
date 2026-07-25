@@ -62,4 +62,28 @@ export const EJEMPLOS: Ejemplo[] = [
       'a ir a almorzar a su casa con los niños. ¿Le llevamos algo? ' +
       'Ya, un abrazo grande, nos vemos el domingo.',
   },
+
+  // ─── Casos SUTILES: sin palabras clave obvias. Las reglas locales casi ──
+  // ─── no reaccionan; es la capa de IA (Fase 2) la que debe detectarlos. ──
+  {
+    titulo: 'Encuesta que junta datos (sutil, para la IA)',
+    emoji: '🕵️',
+    tipoLlamante: 'desconocido',
+    texto:
+      'Buenas tardes, don José, ¿cómo está? Lo llamamos por el nuevo beneficio para el adulto mayor de su comuna.\n' +
+      'Usted quedó en la lista de vecinos seleccionados, es sin costo.\n' +
+      'Para inscribirlo necesito confirmar algunos datos, ¿ya? ¿Me confirma su RUT y su dirección exacta?\n' +
+      '¿Y usted vive solito o lo acompaña alguien? ¿A qué hora suele estar en la casa, para la visita del evaluador?',
+  },
+  {
+    titulo: 'Falso nieto con vergüenza (sutil, para la IA)',
+    emoji: '🎭',
+    tipoLlamante: 'desconocido',
+    texto:
+      'Aló, ¿abuelita? Tanto tiempo, ¿cómo ha estado?\n' +
+      '¿No me va a decir que no sabe quién soy? … Sí, po, ese mismo, el regalón.\n' +
+      'Oiga, la llamaba porque ando con un tema medio complicado, me da vergüenza contarle por teléfono.\n' +
+      'Es que ando corto de plata y usted es la única que me entiende. No le vaya a comentar a mi mamá eso sí, porque se enoja.\n' +
+      'Yo le mando los datos de la cuenta de un amigo que me está ayudando, ¿ya?',
+  },
 ];

@@ -25,6 +25,15 @@ import {
   crearAnalisis,
   EstadoAnalisis,
 } from '../brain/analizador';
+import {
+  analizarConIA,
+  combinarConIA,
+  debeConsultarIA,
+  iaConfigurada,
+  peorVeredicto,
+  PUNTOS_NIVEL_IA,
+  VeredictoIA,
+} from '../brain/ia';
 import { NivelRiesgo, TipoLlamante } from '../brain/reglas';
 
 /** Cuánto se demora en "escuchar" cada bloque (simula 10-15 s de llamada). */
@@ -83,6 +92,21 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
   const nivelPrevio = useRef<NivelRiesgo>(estado.nivel);
   const scrollRef = useRef<ScrollView>(null);
 
+  // Capa de IA (Fase 2): veredicto de la API de Claude sobre la conversación.
+  const [veredictoIA, setVeredictoIA] = useState<VeredictoIA | null>(null);
+  const [iaAnalizando, setIaAnalizando] = useState(false);
+  const iaEnVuelo = useRef(false);
+  const ultimoBloqueAnalizado = useRef(0);
+  const montado = useRef(true);
+  useEffect(() => {
+    return () => {
+      montado.current = false;
+    };
+  }, []);
+
+  // Lo que ve el abuelito: reglas locales + IA combinadas (el más alto manda).
+  const estadoFinal = combinarConIA(estado, veredictoIA);
+
   const terminado = mostrados.length >= bloques.length;
 
   // Va "escuchando" la llamada: procesa un bloque cada pocos segundos.
@@ -99,13 +123,35 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
     return () => clearTimeout(timer);
   }, [mostrados.length, terminado, bloques]);
 
-  // Reacciones físicas cuando cambia el nivel de riesgo.
+  // Capa de IA: tras cada bloque nuevo envía la conversación acumulada a la
+  // API de Claude. Corre en paralelo: si falla o no hay internet, el semáforo
+  // de reglas locales sigue funcionando igual.
+  useEffect(() => {
+    if (mostrados.length === 0 || mostrados.length <= ultimoBloqueAnalizado.current) return;
+    if (iaEnVuelo.current) return; // ya hay un análisis en curso; al volver se retoma
+    if (!debeConsultarIA(tipoLlamante, estado.puntaje, veredictoIA)) return;
+
+    iaEnVuelo.current = true;
+    ultimoBloqueAnalizado.current = mostrados.length;
+    setIaAnalizando(true);
+    analizarConIA(mostrados.join('\n')).then((nuevo) => {
+      iaEnVuelo.current = false;
+      if (!montado.current) return;
+      setIaAnalizando(false);
+      if (nuevo) {
+        // El riesgo nunca baja durante la llamada: se conserva el peor veredicto.
+        setVeredictoIA((previo) => peorVeredicto(previo, nuevo));
+      }
+    });
+  }, [mostrados.length, iaAnalizando, tipoLlamante, estado.puntaje, veredictoIA]);
+
+  // Reacciones físicas cuando cambia el nivel de riesgo (reglas + IA).
   useEffect(() => {
     const anterior = nivelPrevio.current;
-    nivelPrevio.current = estado.nivel;
-    if (estado.nivel === anterior) return;
+    nivelPrevio.current = estadoFinal.nivel;
+    if (estadoFinal.nivel === anterior) return;
 
-    if (estado.nivel === 'rojo') {
+    if (estadoFinal.nivel === 'rojo') {
       // Vibración fuerte y distintiva: solo significa PELIGRO.
       Vibration.vibrate([0, 500, 200, 500, 200, 900]);
       // Voz suave al oído: durante la llamada no se ve la pantalla.
@@ -116,10 +162,10 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
       } catch {
         // Si el dispositivo no tiene voz en español, seguimos sin audio.
       }
-    } else if (estado.nivel === 'naranja') {
+    } else if (estadoFinal.nivel === 'naranja') {
       Vibration.vibrate(300);
     }
-  }, [estado.nivel]);
+  }, [estadoFinal.nivel]);
 
   // Al salir de la pantalla se apaga todo.
   useEffect(() => {
@@ -129,8 +175,9 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
     };
   }, []);
 
-  const apariencia = APARIENCIA[estado.nivel];
-  const puntajeVisible = Math.min(estado.puntaje, 100);
+  const apariencia = APARIENCIA[estadoFinal.nivel];
+  const puntajeVisible = Math.min(estadoFinal.puntaje, 100);
+  const puntosIA = veredictoIA ? PUNTOS_NIVEL_IA[veredictoIA.nivel] : 0;
 
   return (
     <View style={[estilos.pantalla, { backgroundColor: apariencia.fondo }]}>
@@ -138,6 +185,17 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
       <Text style={[estilos.llamante, { color: apariencia.textoPrincipal }]}>
         {ETIQUETA_LLAMANTE[tipoLlamante]}
       </Text>
+
+      {/* Estado de la capa de IA (solo aplica a números desconocidos) */}
+      {tipoLlamante === 'desconocido' && (
+        <Text style={[estilos.estadoIA, { color: apariencia.textoPrincipal }]}>
+          {!iaConfigurada()
+            ? '🧠 IA no configurada — analizando solo con reglas locales'
+            : iaAnalizando
+              ? '🧠 IA de Claude analizando…'
+              : '🧠 IA de Claude vigilando'}
+        </Text>
+      )}
 
       {/* Semáforo: ícono + texto gigante (nunca solo color) */}
       <View style={estilos.semaforo}>
@@ -151,14 +209,14 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
       </View>
 
       {/* Sugerencia de verificación (estado naranja) */}
-      {estado.preguntaSugerida && (
+      {estadoFinal.preguntaSugerida && (
         <View style={estilos.tarjetaOscura}>
-          <Text style={estilos.textoTarjeta}>💬 {estado.preguntaSugerida}</Text>
+          <Text style={estilos.textoTarjeta}>💬 {estadoFinal.preguntaSugerida}</Text>
         </View>
       )}
 
       {/* Aviso de alerta a la familia (estado rojo) */}
-      {estado.nivel === 'rojo' && (
+      {estadoFinal.nivel === 'rojo' && (
         <View style={estilos.tarjetaOscura}>
           <Text style={estilos.textoTarjeta}>
             🔔 Su familia ya fue avisada (simulado en esta versión)
@@ -176,14 +234,19 @@ export default function PantallaLlamada({ tipoLlamante, bloques, onColgar }: Pro
         </View>
       </View>
 
-      {/* Señales detectadas */}
-      {estado.senales.length > 0 && (
+      {/* Señales detectadas (reglas locales + veredicto de la IA) */}
+      {(estadoFinal.senales.length > 0 || puntosIA > 0) && (
         <View style={estilos.senales}>
-          {estado.senales.map((s) => (
+          {estadoFinal.senales.map((s) => (
             <Text key={s.idRegla} style={estilos.senal}>
               🚩 {s.descripcion} (+{s.puntos})
             </Text>
           ))}
+          {veredictoIA && puntosIA > 0 && (
+            <Text style={estilos.senal}>
+              🧠 IA: {veredictoIA.motivo} (+{puntosIA})
+            </Text>
+          )}
         </View>
       )}
 
@@ -236,7 +299,14 @@ const estilos = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 4,
+  },
+  estadoIA: {
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    opacity: 0.85,
+    marginBottom: 8,
   },
   semaforo: {
     alignItems: 'center',

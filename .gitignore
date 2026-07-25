@@ -30,7 +30,8 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files (aquí vive la API key — NUNCA se sube a GitHub)
+.env
 .env*.local
 
 # typescript
