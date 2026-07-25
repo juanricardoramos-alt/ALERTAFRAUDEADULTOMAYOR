@@ -25,6 +25,12 @@ se ingresa como texto (simulando la transcripción de una llamada).
    npx expo start
    ```
 
+   > **Nota de compatibilidad**: el proyecto usa **Expo SDK 54** a propósito,
+   > porque es la versión que soporta la app Expo Go disponible hoy en la
+   > App Store y Google Play (las versiones más nuevas de Expo Go llevan
+   > meses esperando aprobación de Apple). No lo subas de versión mientras
+   > pruebes con Expo Go.
+
 4. Aparecerá un código QR en la terminal:
    - **Android**: abre Expo Go y escanea el QR.
    - **iPhone**: escanea el QR con la cámara y toca la notificación.
